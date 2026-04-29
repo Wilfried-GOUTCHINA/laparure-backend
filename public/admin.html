@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Parure — Panel Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #e8a4b8;
+    --rose-pale: #f7dce5;
+    --rose-fonce: #c4788f;
+    --or: #c9a96e;
+    --blanc: #fdfaf8;
+    --noir: #1a1010;
+    --gris: #6b5b5b;
+    --bg: #f0e8ec;
+    --sidebar: #2a1520;
+    --card: #ffffff;
+    --success: #4caf7d;
+    --warning: #f0a500;
+    --danger: #e05c5c;
+    --info: #5b8ef0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Jost', sans-serif; background: var(--bg); color: var(--noir); min-height: 100vh; }
+
+  /* ===== LOGIN ===== */
+  #login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--sidebar) 0%, #3d1f2a 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #login-page::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,164,184,0.15) 0%, transparent 70%);
+    top: -100px; right: -100px;
+  }
+
+  .login-box {
+    background: white;
+    border-radius: 2rem;
+    padding: 3rem;
+    width: 420px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .login-logo h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--noir);
+  }
+
+  .login-logo h1 span { color: var(--rose-fonce); font-style: italic; }
+  .login-logo p { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gris); margin-top: 0.3rem; }
+
+  .form-group { margin-bottom: 1.5rem; }
+
+  .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gris);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid var(--rose-pale);
+    border-radius: 0.8rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.95rem;
+    color: var(--noir);
+    background: var(--blanc);
+    transition: border-color 0.3s;
+    outline: none;
+  }
+
+  .form-group input:focus { border-color: var(--rose-fonce); }
+
+  .btn-login {
+    width: 100%;
+    padding: 1rem;
+    background: var(--sidebar);
+    color: white;
+    border: none;
+    border-radius: 0.8rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-login:hover { background: var(--rose-fonce); transform: translateY(-2px); }
+
+  .login-error {
+    background: #fde8e8;
+    color: var(--danger);
+    padding: 0.8rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    display: none;
+    text-align: center;
+  }
+
+  /* ===== ADMIN LAYOUT ===== */
+  #admin-page { display: none; min-height: 100vh; }
+
+  .admin-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--sidebar);
+    color: white;
+    padding: 2rem 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 260px;
+    overflow-y: auto;
+    z-index: 50;
+  }
+
+  .sidebar-logo {
+    padding: 0 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 1.5rem;
+  }
+
+  .sidebar-logo h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+  }
+
+  .sidebar-logo h2 span { color: var(--rose); font-style: italic; }
+  .sidebar-logo p { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
+
+  .sidebar-menu { list-style: none; padding: 0 0.8rem; }
+
+  .sidebar-menu li { margin-bottom: 0.3rem; }
+
+  .sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    border-radius: 0.8rem;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .sidebar-menu a:hover, .sidebar-menu a.active {
+    background: rgba(232,164,184,0.15);
+    color: var(--rose);
+  }
+
+  .sidebar-menu a .icon { font-size: 1.1rem; width: 24px; }
+
+  .sidebar-section {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    padding: 1rem 1.8rem 0.5rem;
+  }
+
+  .btn-logout {
+    margin: 1.5rem 0.8rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    background: rgba(224,92,92,0.15);
+    color: #e05c5c;
+    border: none;
+    border-radius: 0.8rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    width: calc(100% - 1.6rem);
+    transition: all 0.3s;
+  }
+
+  .btn-logout:hover { background: rgba(224,92,92,0.3); }
+
+  /* MAIN CONTENT */
+  .main-content {
+    margin-left: 260px;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+  }
+
+  .page-title span { color: var(--rose-fonce); font-style: italic; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border-radius: 1.2rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border-left: 4px solid transparent;
+    transition: transform 0.3s;
+  }
+
+  .stat-card:hover { transform: translateY(-4px); }
+  .stat-card.rose { border-color: var(--rose-fonce); }
+  .stat-card.or { border-color: var(--or); }
+  .stat-card.success { border-color: var(--success); }
+  .stat-card.info { border-color: var(--info); }
+
+  .stat-card-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gris);
+    margin-bottom: 0.8rem;
+  }
+
+  .stat-card-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--noir);
+    line-height: 1;
+  }
+
+  .stat-card-sub {
+    font-size: 0.75rem;
+    color: var(--gris);
+    margin-top: 0.4rem;
+  }
+
+  /* CARDS */
+  .content-card {
+    background: var(--card);
+    border-radius: 1.2rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    margin-bottom: 1.5rem;
+  }
+
+  .content-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .content-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+  }
+
+  /* BUTTONS */
+  .btn {
+    padding: 0.6rem 1.5rem;
+    border-radius: 2rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+    text-transform: uppercase;
+  }
+
+  .btn-primary { background: var(--sidebar); color: white; }
+  .btn-primary:hover { background: var(--rose-fonce); transform: translateY(-2px); }
+  .btn-rose { background: var(--rose-fonce); color: white; }
+  .btn-rose:hover { background: var(--sidebar); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-sm { padding: 0.4rem 1rem; font-size: 0.7rem; }
+  .btn-outline { background: transparent; border: 1px solid var(--rose); color: var(--rose-fonce); }
+  .btn-outline:hover { background: var(--rose-pale); }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gris);
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--rose-pale);
+  }
+  td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #f5f0f0;
+    font-size: 0.88rem;
+    vertical-align: middle;
+  }
+  tr:hover td { background: var(--blanc); }
+
+  .badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .badge-success { background: #e8f5ee; color: var(--success); }
+  .badge-warning { background: #fff8e6; color: var(--warning); }
+  .badge-danger { background: #fde8e8; color: var(--danger); }
+  .badge-info { background: #e8effe; color: var(--info); }
+  .badge-rose { background: var(--rose-pale); color: var(--rose-fonce); }
+
+  /* BIJOU IMAGE */
+  .bijou-img-thumb {
+    width: 50px; height: 50px;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    background: var(--rose-pale);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    width: 500px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  .modal-close {
+    background: var(--rose-pale);
+    border: none;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--rose-fonce);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-close:hover { background: var(--rose); color: white; }
+
+  /* FORM */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .form-field { margin-bottom: 1.2rem; }
+
+  .form-field label {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gris);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--rose-pale);
+    border-radius: 0.7rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.9rem;
+    color: var(--noir);
+    background: var(--blanc);
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus { border-color: var(--rose-fonce); }
+
+  .form-field textarea { resize: vertical; min-height: 80px; }
+
+  /* PAGE SECTIONS */
+  .page-section { display: none; }
+  .page-section.active { display: block; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 0.8rem;
+    color: white;
+    font-size: 0.85rem;
+    z-index: 999;
+    transform: translateX(200%);
+    transition: transform 0.4s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+
+  .toast.show { transform: translateX(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  /* LOADING */
+  .loading {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gris);
+    font-style: italic;
+  }
+
+  /* COMMANDE DETAIL */
+  .commande-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .commande-info-item label {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gris);
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .commande-info-item span {
+    font-size: 0.95rem;
+    font-weight: 400;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gris);
+  }
+
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty-state p { font-size: 0.9rem; font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN PAGE -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>La <span>Parure</span></h1>
+      <p>Panel Administrateur</p>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="admin@laparure.com" value="admin@laparure.com">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="login-password" placeholder="••••••••" onkeypress="if(event.key==='Enter') login()">
+    </div>
+    <button class="btn-login" onclick="login()">Se connecter</button>
+    <div class="login-error" id="login-error">Email ou mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="admin-page">
+  <div class="admin-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h2>La <span>Parure</span></h2>
+        <p>Administration</p>
+      </div>
+
+      <div class="sidebar-section">Navigation</div>
+      <ul class="sidebar-menu">
+        <li><a onclick="showPage('dashboard')" class="active" id="menu-dashboard">
+          <span class="icon">📊</span> Tableau de bord
+        </a></li>
+        <li><a onclick="showPage('bijoux')" id="menu-bijoux">
+          <span class="icon">💍</span> Bijoux
+        </a></li>
+        <li><a onclick="showPage('commandes')" id="menu-commandes">
+          <span class="icon">📦</span> Commandes
+        </a></li>
+      </ul>
+
+      <div class="sidebar-section">Compte</div>
+      <ul class="sidebar-menu">
+        <li><a onclick="showPage('parametres')" id="menu-parametres">
+          <span class="icon">⚙️</span> Paramètres
+        </a></li>
+      </ul>
+
+      <button class="btn-logout" onclick="logout()">
+        <span>🚪</span> Se déconnecter
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+      <!-- DASHBOARD -->
+      <div class="page-section active" id="page-dashboard">
+        <div class="page-header">
+          <h1 class="page-title">Bonjour, <span>Admin</span> 👋</h1>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card rose">
+            <div class="stat-card-label">Total Bijoux</div>
+            <div class="stat-card-value" id="stat-bijoux">—</div>
+            <div class="stat-card-sub">Articles en catalogue</div>
+          </div>
+          <div class="stat-card or">
+            <div class="stat-card-label">Commandes</div>
+            <div class="stat-card-value" id="stat-commandes">—</div>
+            <div class="stat-card-sub">Total reçues</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-card-label">En attente</div>
+            <div class="stat-card-value" id="stat-attente">—</div>
+            <div class="stat-card-sub">À traiter</div>
+          </div>
+          <div class="stat-card info">
+            <div class="stat-card-label">Livrées</div>
+            <div class="stat-card-value" id="stat-livrees">—</div>
+            <div class="stat-card-sub">Commandes livrées</div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <div class="content-card-header">
+            <h2 class="content-card-title">Dernières Commandes</h2>
+            <button class="btn btn-outline btn-sm" onclick="showPage('commandes')">Voir tout</button>
+          </div>
+          <div id="dashboard-commandes"><div class="loading">Chargement...</div></div>
+        </div>
+      </div>
+
+      <!-- BIJOUX -->
+      <div class="page-section" id="page-bijoux">
+        <div class="page-header">
+          <h1 class="page-title">Gestion des <span>Bijoux</span></h1>
+          <button class="btn btn-primary" onclick="openBijouModal()">+ Ajouter un bijou</button>
+        </div>
+
+        <div class="content-card">
+          <div id="bijoux-list"><div class="loading">Chargement...</div></div>
+        </div>
+      </div>
+
+      <!-- COMMANDES -->
+      <div class="page-section" id="page-commandes">
+        <div class="page-header">
+          <h1 class="page-title">Gestion des <span>Commandes</span></h1>
+        </div>
+
+        <div class="content-card">
+          <div id="commandes-list"><div class="loading">Chargement...</div></div>
+        </div>
+      </div>
+
+      <!-- PARAMETRES -->
+      <div class="page-section" id="page-parametres">
+        <div class="page-header">
+          <h1 class="page-title">Para<span>mètres</span></h1>
+        </div>
+        <div class="content-card">
+          <div class="content-card-header">
+            <h2 class="content-card-title">Informations de connexion</h2>
+          </div>
+          <div class="form-field">
+            <label>Email Admin</label>
+            <input type="text" value="admin@laparure.com" disabled>
+          </div>
+          <div class="form-field">
+            <label>WhatsApp</label>
+            <input type="text" value="+229 0153924997">
+          </div>
+          <div class="form-field">
+            <label>URL du Backend</label>
+            <input type="text" id="api-url-input" value="http://localhost:4000">
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">Sauvegarder</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL BIJOU -->
+<div class="modal-overlay" id="modal-bijou">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-bijou-title">Ajouter un Bijou</h2>
+      <button class="modal-close" onclick="closeBijouModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Nom du bijou *</label>
+        <input type="text" id="bijou-nom" placeholder="Ex: Collier Lumière">
+      </div>
+      <div class="form-field">
+        <label>Prix (FCFA) *</label>
+        <input type="number" id="bijou-prix" placeholder="Ex: 5000">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Catégorie *</label>
+      <select id="bijou-categorie">
+        <option value="">Choisir une catégorie</option>
+        <option value="colliers">Colliers</option>
+        <option value="bagues">Bagues</option>
+        <option value="bracelets">Bracelets</option>
+        <option value="boucles">Boucles d'oreilles</option>
+        <option value="parures">Parures</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Description</label>
+      <textarea id="bijou-description" placeholder="Décrivez le bijou..."></textarea>
+    </div>
+    <div class="form-field">
+      <label>Photo du bijou</label>
+      <input type="file" id="bijou-image" accept="image/*">
+    </div>
+    <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1rem;">
+      <button class="btn btn-outline" onclick="closeBijouModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveBijou()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMMANDE DETAIL -->
+<div class="modal-overlay" id="modal-commande">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Détail Commande</h2>
+      <button class="modal-close" onclick="closeCommandeModal()">✕</button>
+    </div>
+    <div id="commande-detail-content"></div>
+  </div>
+</div>
+
+<script>
+  const API_URL = localStorage.getItem('api_url') || 'http://localhost:4000';
+  let token = localStorage.getItem('laparure_token') || '';
+  let editingBijouId = null;
+  let allCommandes = [];
+  let allBijoux = [];
+
+  // ===== AUTH =====
+  async function login() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (data.token) {
+        token = data.token;
+        localStorage.setItem('laparure_token', token);
+        showAdmin();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+        document.getElementById('login-error').textContent = data.message || 'Identifiants incorrects';
+      }
+    } catch (err) {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('login-error').textContent = 'Impossible de contacter le serveur';
+    }
+  }
+
+  function logout() {
+    token = '';
+    localStorage.removeItem('laparure_token');
+    document.getElementById('admin-page').style.display = 'none';
+    document.getElementById('login-page').style.display = 'flex';
+  }
+
+  function showAdmin() {
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('admin-page').style.display = 'block';
+    loadDashboard();
+  }
+
+  // Auto-login si token existant
+  if (token) showAdmin();
+
+  // ===== NAVIGATION =====
+  function showPage(page) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.getElementById('menu-' + page).classList.add('active');
+
+    if (page === 'dashboard') loadDashboard();
+    if (page === 'bijoux') loadBijoux();
+    if (page === 'commandes') loadCommandes();
+  }
+
+  // ===== DASHBOARD =====
+  async function loadDashboard() {
+    try {
+      const [bijoux, commandes] = await Promise.all([
+        fetch(`${API_URL}/api/bijoux`).then(r => r.json()),
+        fetch(`${API_URL}/api/commandes`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json())
+      ]);
+
+      allBijoux = bijoux;
+      allCommandes = commandes;
+
+      document.getElementById('stat-bijoux').textContent = bijoux.length;
+      document.getElementById('stat-commandes').textContent = commandes.length;
+      document.getElementById('stat-attente').textContent = commandes.filter(c => c.statut === 'en_attente').length;
+      document.getElementById('stat-livrees').textContent = commandes.filter(c => c.statut === 'livre').length;
+
+      const recent = commandes.slice(0, 5);
+      if (recent.length === 0) {
+        document.getElementById('dashboard-commandes').innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>Aucune commande pour l\'instant</p></div>';
+        return;
+      }
+
+      document.getElementById('dashboard-commandes').innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Client</th><th>Téléphone</th><th>Total</th><th>Paiement</th><th>Statut</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${recent.map(c => `
+              <tr>
+                <td><strong>${c.client.nom}</strong></td>
+                <td>${c.client.telephone}</td>
+                <td><strong>${c.total.toLocaleString()} FCFA</strong></td>
+                <td>${badgePaiement(c.paiement)}</td>
+                <td>${badgeStatut(c.statut)}</td>
+                <td><button class="btn btn-outline btn-sm" onclick="openCommandeDetail('${c._id}')">Voir</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  // ===== BIJOUX =====
+  async function loadBijoux() {
+    try {
+      const bijoux = await fetch(`${API_URL}/api/bijoux`).then(r => r.json());
+      allBijoux = bijoux;
+
+      if (bijoux.length === 0) {
+        document.getElementById('bijoux-list').innerHTML = '<div class="empty-state"><div class="empty-icon">💍</div><p>Aucun bijou dans le catalogue</p></div>';
+        return;
+      }
+
+      document.getElementById('bijoux-list').innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Photo</th><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Statut</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${bijoux.map(b => `
+              <tr>
+                <td>
+                  <div class="bijou-img-thumb">
+                    ${b.image ? `<img src="${API_URL}${b.image}" style="width:50px;height:50px;border-radius:0.5rem;object-fit:cover;">` : '💍'}
+                  </div>
+                </td>
+                <td><strong>${b.nom}</strong><br><small style="color:var(--gris)">${b.description || ''}</small></td>
+                <td><span class="badge badge-rose">${b.categorie}</span></td>
+                <td><strong>${b.prix.toLocaleString()} FCFA</strong></td>
+                <td><span class="badge ${b.disponible ? 'badge-success' : 'badge-danger'}">${b.disponible ? 'Disponible' : 'Indisponible'}</span></td>
+                <td style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                  <button class="btn btn-outline btn-sm" onclick="editBijou('${b._id}')">✏️ Modifier</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteBijou('${b._id}', '${b.nom}')">🗑️</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch(err) {
+      showToast('Erreur de chargement', 'error');
+    }
+  }
+
+  function openBijouModal(id) {
+    editingBijouId = null;
+    document.getElementById('modal-bijou-title').textContent = 'Ajouter un Bijou';
+    document.getElementById('bijou-nom').value = '';
+    document.getElementById('bijou-prix').value = '';
+    document.getElementById('bijou-categorie').value = '';
+    document.getElementById('bijou-description').value = '';
+    document.getElementById('bijou-image').value = '';
+    document.getElementById('modal-bijou').classList.add('open');
+  }
+
+  function editBijou(id) {
+    const b = allBijoux.find(x => x._id === id);
+    if (!b) return;
+    editingBijouId = id;
+    document.getElementById('modal-bijou-title').textContent = 'Modifier le Bijou';
+    document.getElementById('bijou-nom').value = b.nom;
+    document.getElementById('bijou-prix').value = b.prix;
+    document.getElementById('bijou-categorie').value = b.categorie;
+    document.getElementById('bijou-description').value = b.description || '';
+    document.getElementById('modal-bijou').classList.add('open');
+  }
+
+  function closeBijouModal() {
+    document.getElementById('modal-bijou').classList.remove('open');
+  }
+
+  async function saveBijou() {
+    const nom = document.getElementById('bijou-nom').value;
+    const prix = document.getElementById('bijou-prix').value;
+    const categorie = document.getElementById('bijou-categorie').value;
+    const description = document.getElementById('bijou-description').value;
+    const imageFile = document.getElementById('bijou-image').files[0];
+
+    if (!nom || !prix || !categorie) {
+      showToast('Remplissez les champs obligatoires', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('nom', nom);
+    formData.append('prix', prix);
+    formData.append('categorie', categorie);
+    formData.append('description', description);
+    if (imageFile) formData.append('image', imageFile);
+
+    try {
+      const url = editingBijouId ? `${API_URL}/api/bijoux/${editingBijouId}` : `${API_URL}/api/bijoux`;
+      const method = editingBijouId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+
+      if (res.ok) {
+        showToast(editingBijouId ? 'Bijou modifié !' : 'Bijou ajouté !', 'success');
+        closeBijouModal();
+        loadBijoux();
+      } else {
+        showToast('Erreur lors de la sauvegarde', 'error');
+      }
+    } catch(err) {
+      showToast('Erreur serveur', 'error');
+    }
+  }
+
+  async function deleteBijou(id, nom) {
+    if (!confirm(`Supprimer "${nom}" ?`)) return;
+    try {
+      const res = await fetch(`${API_URL}/api/bijoux/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        showToast('Bijou supprimé', 'success');
+        loadBijoux();
+      }
+    } catch(err) {
+      showToast('Erreur', 'error');
+    }
+  }
+
+  // ===== COMMANDES =====
+  async function loadCommandes() {
+    try {
+      const commandes = await fetch(`${API_URL}/api/commandes`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(r => r.json());
+      allCommandes = commandes;
+
+      if (commandes.length === 0) {
+        document.getElementById('commandes-list').innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>Aucune commande reçue</p></div>';
+        return;
+      }
+
+      document.getElementById('commandes-list').innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Client</th><th>Téléphone</th><th>Total</th><th>Paiement</th><th>Statut</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${commandes.map(c => `
+              <tr>
+                <td style="font-size:0.8rem;color:var(--gris)">${new Date(c.createdAt).toLocaleDateString('fr-FR')}</td>
+                <td><strong>${c.client.nom}</strong></td>
+                <td>${c.client.telephone}</td>
+                <td><strong>${c.total.toLocaleString()} FCFA</strong></td>
+                <td>${badgePaiement(c.paiement)}</td>
+                <td>
+                  <select onchange="updateStatut('${c._id}', this.value)" style="border:1px solid var(--rose-pale);border-radius:1rem;padding:0.3rem 0.8rem;font-size:0.78rem;background:white;cursor:pointer;">
+                    <option value="en_attente" ${c.statut==='en_attente'?'selected':''}>En attente</option>
+                    <option value="confirme" ${c.statut==='confirme'?'selected':''}>Confirmé</option>
+                    <option value="livre" ${c.statut==='livre'?'selected':''}>Livré</option>
+                    <option value="annule" ${c.statut==='annule'?'selected':''}>Annulé</option>
+                  </select>
+                </td>
+                <td style="display:flex;gap:0.5rem;">
+                  <button class="btn btn-outline btn-sm" onclick="openCommandeDetail('${c._id}')">👁️</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteCommande('${c._id}')">🗑️</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch(err) {
+      showToast('Erreur de chargement', 'error');
+    }
+  }
+
+  async function updateStatut(id, statut) {
+    try {
+      await fetch(`${API_URL}/api/commandes/${id}/statut`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ statut })
+      });
+      showToast('Statut mis à jour', 'success');
+    } catch(err) {
+      showToast('Erreur', 'error');
+    }
+  }
+
+  function openCommandeDetail(id) {
+    const c = allCommandes.find(x => x._id === id);
+    if (!c) return;
+
+    document.getElementById('commande-detail-content').innerHTML = `
+      <div class="commande-info">
+        <div class="commande-info-item"><label>Client</label><span>${c.client.nom}</span></div>
+        <div class="commande-info-item"><label>Téléphone</label><span>${c.client.telephone}</span></div>
+        <div class="commande-info-item"><label>Email</label><span>${c.client.email || '—'}</span></div>
+        <div class="commande-info-item"><label>Paiement</label><span>${badgePaiement(c.paiement)}</span></div>
+        <div class="commande-info-item"><label>Statut</label><span>${badgeStatut(c.statut)}</span></div>
+        <div class="commande-info-item"><label>Date</label><span>${new Date(c.createdAt).toLocaleDateString('fr-FR')}</span></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--rose-pale);margin:1rem 0;">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;margin-bottom:1rem;">Bijoux commandés</h3>
+      ${c.bijoux.map(b => `
+        <div style="display:flex;justify-content:space-between;padding:0.8rem 0;border-bottom:1px solid #f5f0f0;">
+          <span>💍 ${b.nom} × ${b.quantite}</span>
+          <strong>${(b.prix * b.quantite).toLocaleString()} FCFA</strong>
+        </div>
+      `).join('')}
+      <div style="display:flex;justify-content:space-between;padding:1rem 0;font-weight:500;font-size:1.1rem;">
+        <span>Total</span>
+        <strong style="color:var(--rose-fonce)">${c.total.toLocaleString()} FCFA</strong>
+      </div>
+      ${c.notes ? `<div style="background:var(--blanc);padding:1rem;border-radius:0.7rem;font-size:0.85rem;color:var(--gris);margin-top:0.5rem;">📝 ${c.notes}</div>` : ''}
+    `;
+
+    document.getElementById('modal-commande').classList.add('open');
+  }
+
+  function closeCommandeModal() {
+    document.getElementById('modal-commande').classList.remove('open');
+  }
+
+  async function deleteCommande(id) {
+    if (!confirm('Supprimer cette commande ?')) return;
+    try {
+      await fetch(`${API_URL}/api/commandes/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      showToast('Commande supprimée', 'success');
+      loadCommandes();
+    } catch(err) {
+      showToast('Erreur', 'error');
+    }
+  }
+
+  // ===== HELPERS =====
+  function badgeStatut(statut) {
+    const map = {
+      en_attente: '<span class="badge badge-warning">En attente</span>',
+      confirme: '<span class="badge badge-info">Confirmé</span>',
+      livre: '<span class="badge badge-success">Livré</span>',
+      annule: '<span class="badge badge-danger">Annulé</span>'
+    };
+    return map[statut] || statut;
+  }
+
+  function badgePaiement(p) {
+    const map = {
+      mtn: '<span class="badge" style="background:#fff9e0;color:#c8960a;">MTN MoMo</span>',
+      moov: '<span class="badge" style="background:#e0ecff;color:#0066cc;">Moov Money</span>',
+      whatsapp: '<span class="badge" style="background:#e8f5ee;color:#25D366;">WhatsApp</span>'
+    };
+    return map[p] || p;
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function saveSettings() {
+    const url = document.getElementById('api-url-input').value;
+    localStorage.setItem('api_url', url);
+    showToast('Paramètres sauvegardés !', 'success');
+  }
+
+  // Fermer modals en cliquant dehors
+  document.getElementById('modal-bijou').addEventListener('click', function(e) {
+    if (e.target === this) closeBijouModal();
+  });
+  document.getElementById('modal-commande').addEventListener('click', function(e) {
+    if (e.target === this) closeCommandeModal();
+  });
+</script>
+</body>
+</html>
