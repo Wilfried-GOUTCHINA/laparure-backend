@@ -3,12 +3,23 @@ const router = express.Router();
 const Bijou = require('../models/Bijou');
 const auth = require('../middleware/auth');
 const multer = require('multer');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'laparure',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
+  }
+});
+
 const upload = multer({ storage });
 
 router.get('/', async (req, res) => {
@@ -24,7 +35,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
     const bijou = new Bijou({
       ...req.body,
-      image: req.file ? '/uploads/' + req.file.filename : null
+      image: req.file ? req.file.path : null
     });
     await bijou.save();
     res.status(201).json(bijou);
@@ -36,7 +47,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     const update = { ...req.body };
-    if (req.file) update.image = '/uploads/' + req.file.filename;
+    if (req.file) update.image = req.file.path;
     const bijou = await Bijou.findByIdAndUpdate(req.params.id, update, { new: true });
     res.json(bijou);
   } catch (err) {
