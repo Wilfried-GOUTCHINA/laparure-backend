@@ -246,6 +246,7 @@
     .payment-cards { flex-direction: column; align-items: center; }
   }
 </style>
+<script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
 </head>
 <body>
 
@@ -377,7 +378,54 @@
     </a>
   </div>
 
-  <!-- PAIEMENT -->
+  <!-- PAIEMENT FEDAPAY -->
+<div style="margin-top:3rem;" id="section-paiement">
+  <div class="section-tag" style="justify-content:center;margin-bottom:1rem;">Paiement Sécurisé</div>
+  <p style="font-size:0.9rem;color:var(--gris);font-weight:200;margin-bottom:2rem;">Payez facilement et en toute sécurité via FedaPay — MTN MoMo accepté.</p>
+
+  <div style="max-width:480px;margin:0 auto;background:white;border-radius:1.5rem;padding:2rem;box-shadow:0 10px 40px rgba(196,120,143,0.12);">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+      <span style="font-size:2rem;">🟡</span>
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;">Paiement MTN MoMo</div>
+        <div style="font-size:0.75rem;color:var(--gris);">Via FedaPay — Sécurisé et instantané</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:0.5rem;">Votre nom complet *</label>
+      <input type="text" id="pay-nom" placeholder="Ex: Aminata Kone" style="width:100%;padding:0.8rem 1rem;border:1px solid var(--rose-pale);border-radius:0.7rem;font-family:'Jost',sans-serif;font-size:0.9rem;outline:none;">
+    </div>
+
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:0.5rem;">Numéro MTN MoMo *</label>
+      <input type="tel" id="pay-telephone" placeholder="Ex: 0196XXXXXX" style="width:100%;padding:0.8rem 1rem;border:1px solid var(--rose-pale);border-radius:0.7rem;font-family:'Jost',sans-serif;font-size:0.9rem;outline:none;">
+    </div>
+
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:0.5rem;">Email (optionnel)</label>
+      <input type="email" id="pay-email" placeholder="Ex: aminata@gmail.com" style="width:100%;padding:0.8rem 1rem;border:1px solid var(--rose-pale);border-radius:0.7rem;font-family:'Jost',sans-serif;font-size:0.9rem;outline:none;">
+    </div>
+
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:0.5rem;">Bijou commandé *</label>
+      <select id="pay-bijou" style="width:100%;padding:0.8rem 1rem;border:1px solid var(--rose-pale);border-radius:0.7rem;font-family:'Jost',sans-serif;font-size:0.9rem;outline:none;background:white;">
+        <option value="">Choisir un bijou...</option>
+      </select>
+    </div>
+
+    <div style="background:var(--rose-pale);border-radius:0.7rem;padding:1rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:0.85rem;color:var(--gris);">Montant à payer :</span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--rose-fonce);" id="pay-montant">0 FCFA</span>
+    </div>
+
+    <button onclick="initierPaiement()" style="width:100%;padding:1rem;background:#FFCB00;border:none;border-radius:2rem;font-family:'Jost',sans-serif;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;font-weight:500;transition:all 0.3s;" id="btn-payer">
+      💳 Payer maintenant avec MTN MoMo
+    </button>
+
+    <p style="font-size:0.75rem;color:var(--gris);text-align:center;margin-top:1rem;">🔒 Paiement sécurisé par FedaPay</p>
+  </div>
+</div>
   <div style="margin-top:3rem;">
     <div class="section-tag" style="justify-content:center;margin-bottom:1rem;">Paiement Mobile Money</div>
     <p style="font-size:0.9rem;color:var(--gris);font-weight:200;margin-bottom:2rem;">Payez facilement via MTN MoMo ou Moov Money en 3 étapes simples.</p>
@@ -497,6 +545,77 @@
     const nav = document.querySelector('nav');
     nav.style.boxShadow = window.scrollY > 50 ? '0 4px 20px rgba(196,120,143,0.1)' : 'none';
   });
+  // ===== FEDAPAY =====
+let bijouxDisponibles = [];
+
+async function chargerBijouxPaiement() {
+  try {
+    const bijoux = await fetch(API + '/api/bijoux').then(r => r.json());
+    bijouxDisponibles = bijoux;
+    const select = document.getElementById('pay-bijou');
+    if (!select) return;
+    bijoux.forEach(b => {
+      const option = document.createElement('option');
+      option.value = b._id;
+      option.textContent = `${b.nom} — ${b.prix.toLocaleString()} FCFA`;
+      option.dataset.prix = b.prix;
+      select.appendChild(option);
+    });
+    select.addEventListener('change', function() {
+      const prix = this.options[this.selectedIndex].dataset.prix || 0;
+      document.getElementById('pay-montant').textContent = parseInt(prix).toLocaleString() + ' FCFA';
+    });
+  } catch(err) { console.error(err); }
+}
+
+async function initierPaiement() {
+  const nom = document.getElementById('pay-nom').value;
+  const telephone = document.getElementById('pay-telephone').value;
+  const email = document.getElementById('pay-email').value;
+  const select = document.getElementById('pay-bijou');
+  const bijouId = select.value;
+  const prix = select.options[select.selectedIndex]?.dataset.prix;
+
+  if (!nom || !telephone || !bijouId) {
+    alert('Veuillez remplir tous les champs obligatoires !');
+    return;
+  }
+
+  const btn = document.getElementById('btn-payer');
+  btn.textContent = '⏳ Traitement en cours...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(API + '/api/paiement/initier', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ montant: parseInt(prix), nom, email, telephone, bijoux: [bijouId] })
+    });
+    const data = await res.json();
+
+    if (data.token) {
+      FedaPay.init({
+        public_key: 'pk_sandbox_SycONvo7_j2vNTZer_-SPLcp',
+        transaction: { token: data.token },
+        onComplete: function(resp) {
+          if (resp.reason === FedaPay.DIALOG_DISMISSED) {
+            alert('Paiement annulé.');
+          } else {
+            alert('Paiement réussi ! Merci pour votre commande.');
+          }
+          btn.textContent = '💳 Payer maintenant avec MTN MoMo';
+          btn.disabled = false;
+        }
+      }).open();
+    }
+  } catch(err) {
+    alert('Erreur lors du paiement. Réessayez.');
+    btn.textContent = '💳 Payer maintenant avec MTN MoMo';
+    btn.disabled = false;
+  }
+}
+
+chargerBijouxPaiement();
 
   // ===== INIT =====
   chargerBijoux();
