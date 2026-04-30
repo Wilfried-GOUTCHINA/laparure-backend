@@ -440,7 +440,7 @@
       grid.innerHTML = bijoux.map((b, i) => `
         <div class="bijou-card fade-in" style="animation-delay:${i * 0.1}s">
           ${b.image
-            ? `<img src="${API}${b.image}" class="bijou-img" alt="${b.nom}" onerror="this.style.display='none'">`
+            ? `<img src="${b.image}" class="bijou-img" alt="${b.nom}" onerror="this.style.display='none'">`
             : `<div class="bijou-placeholder"><div class="bijou-icon">💍</div><div class="bijou-placeholder-text">La Parure</div></div>`
           }
           <div class="bijou-overlay">
