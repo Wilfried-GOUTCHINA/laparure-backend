@@ -4,7 +4,6 @@ const Bijou = require('../models/Bijou');
 const auth = require('../middleware/auth');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -12,14 +11,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: 'laparure',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
-  }
-});
-
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 router.get('/', async (req, res) => {
@@ -33,10 +25,20 @@ router.get('/', async (req, res) => {
 
 router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
-    const bijou = new Bijou({
-      ...req.body,
-      image: req.file ? req.file.path : null
-    });
+    let imageUrl = null;
+    if (req.file) {
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: 'laparure' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(req.file.buffer);
+      });
+      imageUrl = result.secure_url;
+    }
+    const bijou = new Bijou({ ...req.body, image: imageUrl });
     await bijou.save();
     res.status(201).json(bijou);
   } catch (err) {
@@ -47,7 +49,18 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     const update = { ...req.body };
-    if (req.file) update.image = req.file.path;
+    if (req.file) {
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: 'laparure' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(req.file.buffer);
+      });
+      update.image = result.secure_url;
+    }
     const bijou = await Bijou.findByIdAndUpdate(req.params.id, update, { new: true });
     res.json(bijou);
   } catch (err) {
