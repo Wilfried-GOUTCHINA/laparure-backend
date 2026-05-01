@@ -13,6 +13,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -20,10 +21,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/bijoux', require('./routes/bijoux'));
 app.use('/api/commandes', require('./routes/commandes'));
+app.use('/api/paiement', require('./routes/paiement'));
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-app.use('/api/paiement', require('./routes/paiement'));
 });
 
 mongoose.connect(process.env.MONGODB_URI)
