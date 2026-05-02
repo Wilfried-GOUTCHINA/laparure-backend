@@ -515,32 +515,15 @@
       const bijoux = await res.json();
 
       if (!bijoux || bijoux.length === 0) {
-       grid.innerHTML = bijoux.map((b, i) => `
-  <div class="bijou-card fade-in" style="animation-delay:${i * 0.1}s">
-    ${b.image
-      ? `<img src="${b.image}" class="bijou-img" alt="${b.nom}" onclick="ouvrirLightbox(${JSON.stringify(b).replace(/"/g, '&quot;')})" style="cursor:zoom-in;">`
-      : `<div class="bijou-placeholder" onclick="ouvrirLightbox(${JSON.stringify(b).replace(/"/g, '&quot;')})" style="cursor:pointer;"><div class="bijou-icon">💍</div></div>`
-    }
-    <div class="bijou-info">
-      <div class="bijou-cat">${b.categorie}</div>
-      <div class="bijou-name">${b.nom}</div>
-      <div class="bijou-desc">${b.prix.toLocaleString()} FCFA${b.description ? ' — ' + b.description : ''}</div>
-    </div>
-  </div>
-`).join(''); = '<div class="collection-loading">Aucun bijou disponible pour le moment.</div>';
-        return;
-      }
+      // Stocker les bijoux globalement pour la lightbox
+window.bijouxData = bijoux;
 
       grid.innerHTML = bijoux.map((b, i) => `
         <div class="bijou-card fade-in" style="animation-delay:${i * 0.1}s">
           ${b.image
-            ? `<img src="${b.image}" class="bijou-img" alt="${b.nom}" onerror="this.style.display='none'">`
-            : `<div class="bijou-placeholder"><div class="bijou-icon">💍</div><div class="bijou-placeholder-text">La Parure</div></div>`
+            ? `<img src="${b.image}" class="bijou-img" alt="${b.nom}" onclick="ouvrirLightbox(${i})" style="cursor:zoom-in;">`
+            : `<div class="bijou-placeholder" onclick="ouvrirLightbox(${i})" style="cursor:pointer;"><div class="bijou-icon">💍</div></div>`
           }
-          <div class="bijou-overlay">
-            <a href="https://wa.me/2290153924997?text=Bonjour%20La%20Parure%2C%20je%20suis%20int%C3%A9ress%C3%A9e%20par%20${encodeURIComponent(b.nom)}" target="_blank">Commander via WhatsApp</a>
-            <a href="mailto:wifriedaderomou@gmail.com?subject=Commande%20-%20${encodeURIComponent(b.nom)}">Envoyer un Email</a>
-          </div>
           <div class="bijou-info">
             <div class="bijou-cat">${b.categorie}</div>
             <div class="bijou-name">${b.nom}</div>
@@ -548,7 +531,6 @@
           </div>
         </div>
       `).join('');
-
       // Réactiver les animations
       document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
