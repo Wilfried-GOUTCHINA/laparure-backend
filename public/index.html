@@ -445,6 +445,58 @@
 
   <p style="font-size:0.8rem;color:var(--gris);font-weight:200;margin-top:2rem;">📍 Cotonou, Bénin &nbsp;|&nbsp; 🕐 Lun–Sam : 8h–20h</p>
 </section>
+<!-- LIGHTBOX -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:500;align-items:center;justify-content:center;flex-direction:column;">
+  <button onclick="fermerLightbox()" style="position:absolute;top:1.5rem;right:1.5rem;background:rgba(255,255,255,0.1);border:none;color:white;width:45px;height:45px;border-radius:50%;font-size:1.3rem;cursor:pointer;">✕</button>
+
+  <div style="position:relative;max-width:600px;width:90%;display:flex;flex-direction:column;align-items:center;">
+    <img id="lightbox-img" src="" alt="" style="max-height:60vh;max-width:100%;border-radius:1rem;object-fit:contain;transition:transform 0.3s;cursor:zoom-in;" onclick="zoomImage(this)">
+
+    <div style="background:white;border-radius:1rem;padding:1.5rem;margin-top:1rem;width:100%;text-align:center;">
+      <div id="lightbox-cat" style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--rose-fonce);margin-bottom:0.3rem;"></div>
+      <div id="lightbox-nom" style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;margin-bottom:0.3rem;"></div>
+      <div id="lightbox-prix" style="font-size:1.1rem;color:var(--gris);margin-bottom:1.2rem;"></div>
+
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <button id="lightbox-pay" onclick="payerLightbox()" style="background:#FFCB00;border:none;padding:0.8rem 2rem;border-radius:2rem;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;font-weight:500;">
+          💳 Payer via FedaPay
+        </button>
+        <a id="lightbox-wa" href="#" target="_blank" style="background:#25D366;color:white;padding:0.8rem 2rem;border-radius:2rem;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;">
+          💬 WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PAIEMENT LIGHTBOX -->
+<div class="modal-overlay" id="modal-pay-lightbox">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">💳 Payer</h2>
+      <button class="modal-close" onclick="document.getElementById('modal-pay-lightbox').classList.remove('open')">✕</button>
+    </div>
+    <div class="form-field">
+      <label>Votre nom complet *</label>
+      <input type="text" id="lb-nom" placeholder="Ex: Aminata Kone" style="width:100%;padding:0.8rem 1rem;border:1px solid var(--rose-pale);border-radius:0.7rem;font-family:'Jost',sans-serif;font-size:0.9rem;outline:none;">
+    </div>
+    <div class="form-field">
+      <label>Numéro MTN MoMo *</label>
+      <input type="tel" id="lb-telephone" placeholder="Ex: 0196XXXXXX" style="width:100%;padding:0.8rem 1rem;border:1px solid var(--rose-pale);border-radius:0.7rem;font-family:'Jost',sans-serif;font-size:0.9rem;outline:none;">
+    </div>
+    <div class="form-field">
+      <label>Email (optionnel)</label>
+      <input type="email" id="lb-email" placeholder="aminata@gmail.com" style="width:100%;padding:0.8rem 1rem;border:1px solid var(--rose-pale);border-radius:0.7rem;font-family:'Jost',sans-serif;font-size:0.9rem;outline:none;">
+    </div>
+    <div style="background:var(--rose-pale);border-radius:0.7rem;padding:1rem;display:flex;justify-content:space-between;margin-bottom:1.5rem;">
+      <span style="font-size:0.85rem;color:var(--gris);">Montant :</span>
+      <span id="lb-montant-display" style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--rose-fonce);">0 FCFA</span>
+    </div>
+    <button onclick="confirmerPaiementLightbox()" style="width:100%;padding:1rem;background:#FFCB00;border:none;border-radius:2rem;font-family:'Jost',sans-serif;font-size:0.8rem;letter-spacing:0.1em;cursor:pointer;font-weight:500;">
+      💳 Payer maintenant
+    </button>
+  </div>
+</div>
 
 <!-- FOOTER -->
 <footer>
@@ -463,7 +515,19 @@
       const bijoux = await res.json();
 
       if (!bijoux || bijoux.length === 0) {
-        grid.innerHTML = '<div class="collection-loading">Aucun bijou disponible pour le moment.</div>';
+       grid.innerHTML = bijoux.map((b, i) => `
+  <div class="bijou-card fade-in" style="animation-delay:${i * 0.1}s">
+    ${b.image
+      ? `<img src="${b.image}" class="bijou-img" alt="${b.nom}" onclick="ouvrirLightbox(${JSON.stringify(b).replace(/"/g, '&quot;')})" style="cursor:zoom-in;">`
+      : `<div class="bijou-placeholder" onclick="ouvrirLightbox(${JSON.stringify(b).replace(/"/g, '&quot;')})" style="cursor:pointer;"><div class="bijou-icon">💍</div></div>`
+    }
+    <div class="bijou-info">
+      <div class="bijou-cat">${b.categorie}</div>
+      <div class="bijou-name">${b.nom}</div>
+      <div class="bijou-desc">${b.prix.toLocaleString()} FCFA${b.description ? ' — ' + b.description : ''}</div>
+    </div>
+  </div>
+`).join(''); = '<div class="collection-loading">Aucun bijou disponible pour le moment.</div>';
         return;
       }
 
@@ -627,6 +691,81 @@ chargerBijouxPaiement();
       console.error(err);
     }
   }
+  // ===== LIGHTBOX =====
+let lightboxBijou = null;
+let zoomed = false;
+
+function ouvrirLightbox(bijou) {
+  lightboxBijou = bijou;
+  zoomed = false;
+  document.getElementById('lightbox-img').src = bijou.image;
+  document.getElementById('lightbox-img').style.transform = 'scale(1)';
+  document.getElementById('lightbox-cat').textContent = bijou.categorie || '';
+  document.getElementById('lightbox-nom').textContent = bijou.nom;
+  document.getElementById('lightbox-prix').textContent = bijou.prix.toLocaleString() + ' FCFA';
+  document.getElementById('lightbox-wa').href = `https://wa.me/2290153924997?text=Bonjour%20La%20Parure%2C%20je%20suis%20intéressée%20par%20${encodeURIComponent(bijou.nom)}%20à%20${bijou.prix}%20FCFA`;
+  document.getElementById('lightbox').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function fermerLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+  document.body.style.overflow = '';
+  zoomed = false;
+}
+
+function zoomImage(img) {
+  zoomed = !zoomed;
+  img.style.transform = zoomed ? 'scale(1.8)' : 'scale(1)';
+  img.style.cursor = zoomed ? 'zoom-out' : 'zoom-in';
+}
+
+function payerLightbox() {
+  if (!lightboxBijou) return;
+  document.getElementById('lb-montant-display').textContent = lightboxBijou.prix.toLocaleString() + ' FCFA';
+  document.getElementById('modal-pay-lightbox').classList.add('open');
+}
+
+async function confirmerPaiementLightbox() {
+  const nom = document.getElementById('lb-nom').value;
+  const telephone = document.getElementById('lb-telephone').value;
+  const email = document.getElementById('lb-email').value;
+
+  if (!nom || !telephone) {
+    alert('Veuillez remplir les champs obligatoires !');
+    return;
+  }
+
+  try {
+    const res = await fetch(API + '/api/paiement/initier', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ montant: lightboxBijou.prix, nom, email, telephone, bijoux: [] })
+    });
+    const data = await res.json();
+
+    if (data.token) {
+      FedaPay.init({
+        public_key: 'pk_sandbox_SycONvo7_j2vNTZer_-SPLcp',
+        transaction: { token: data.token },
+        onComplete: function(resp) {
+          if (resp.reason !== FedaPay.DIALOG_DISMISSED) {
+            alert('✅ Paiement réussi ! Merci pour votre commande.');
+            document.getElementById('modal-pay-lightbox').classList.remove('open');
+            fermerLightbox();
+          }
+        }
+      }).open();
+    }
+  } catch(err) {
+    alert('Erreur lors du paiement.');
+  }
+}
+
+// Fermer lightbox avec Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') fermerLightbox();
+});
 
   chargerCollections();
 
