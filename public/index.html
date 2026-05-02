@@ -303,6 +303,20 @@
     <div class="collection-loading">✨ Chargement des bijoux...</div>
   </div>
 </section>
+<div class="gold-divider"></div>
+
+<!-- COLLECTIONS -->
+<section id="collections" style="background:var(--blanc);">
+  <div class="collection-header">
+    <div>
+      <div class="section-tag">Nos Collections</div>
+      <h2 class="section-title">Collections <em>Exclusives</em></h2>
+    </div>
+  </div>
+  <div id="collections-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2rem;">
+    <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gris);font-style:italic;">Chargement...</div>
+  </div>
+</section>
 
 <div class="gold-divider"></div>
 
@@ -586,6 +600,38 @@ async function initierPaiement() {
 chargerBijouxPaiement();
 
   // ===== INIT =====
+  // ===== CHARGER COLLECTIONS =====
+  async function chargerCollections() {
+    try {
+      const collections = await fetch(API + '/api/collections').then(r => r.json());
+      const grid = document.getElementById('collections-grid');
+      if (!collections || collections.length === 0) {
+        grid.innerHTML = '';
+        return;
+      }
+      grid.innerHTML = collections.map(c => `
+        <div class="bijou-card fade-in" onclick="window.location.href='/collection.html?id=${c._id}'" style="cursor:pointer;">
+          ${c.image_principale
+            ? `<img src="${c.image_principale}" class="bijou-img" alt="${c.nom}">`
+            : `<div class="bijou-placeholder"><div class="bijou-icon">💎</div></div>`
+          }
+          <div class="bijou-info">
+            <div class="bijou-cat">${c.bijoux.length} pièces</div>
+            <div class="bijou-name">${c.nom}</div>
+            <div class="bijou-desc" style="color:var(--rose-fonce);">🎁 -${c.reduction}% sur la collection complète</div>
+          </div>
+        </div>
+      `).join('');
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  chargerCollections();
+
+  // ===== INIT =====
+  
   chargerBijoux();
 </script>
 </body>
