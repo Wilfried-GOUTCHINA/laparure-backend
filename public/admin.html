@@ -572,6 +572,9 @@
 
       <div class="sidebar-section">Compte</div>
       <ul class="sidebar-menu">
+        <li><a onclick="showPage('collections')" id="menu-collections">
+          <span class="icon">💎</span> Collections
+        </a></li>
         <li><a onclick="showPage('parametres')" id="menu-parametres">
           <span class="icon">⚙️</span> Paramètres
         </a></li>
@@ -645,7 +648,16 @@
           <div id="commandes-list"><div class="loading">Chargement...</div></div>
         </div>
       </div>
-
+<!-- COLLECTIONS -->
+<div class="page-section" id="page-collections">
+  <div class="page-header">
+    <h1 class="page-title">Gestion des <span>Collections</span></h1>
+    <button class="btn btn-primary" onclick="openCollectionModal()">+ Créer une collection</button>
+  </div>
+  <div class="content-card">
+    <div id="collections-list"><div class="loading">Chargement...</div></div>
+  </div>
+</div>
       <!-- PARAMETRES -->
       <div class="page-section" id="page-parametres">
         <div class="page-header">
@@ -714,6 +726,47 @@
     <div style="display:flex; gap:1rem; justify-content:flex-end; margin-top:1rem;">
       <button class="btn btn-outline" onclick="closeBijouModal()">Annuler</button>
       <button class="btn btn-primary" onclick="saveBijou()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+<!-- MODAL COLLECTION -->
+<div class="modal-overlay" id="modal-collection">
+  <div class="modal" style="width:600px;max-width:95vw;">
+    <div class="modal-header">
+      <h2 class="modal-title">Créer une Collection</h2>
+      <button class="modal-close" onclick="closeCollectionModal()">✕</button>
+    </div>
+
+    <div class="form-field">
+      <label>Nom de la collection *</label>
+      <input type="text" id="col-nom" placeholder="Ex: Collection Gold 2026">
+    </div>
+    <div class="form-field">
+      <label>Description</label>
+      <textarea id="col-desc" placeholder="Décrivez cette collection..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Réduction collection complète (%)</label>
+        <input type="number" id="col-reduction" value="5" min="0" max="50">
+      </div>
+      <div class="form-field">
+        <label>Photo principale</label>
+        <input type="file" id="col-image" accept="image/*">
+      </div>
+    </div>
+
+    <div style="margin:1.5rem 0 1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;">Bijoux de la collection</h3>
+        <button class="btn btn-outline btn-sm" onclick="ajouterBijouCol()">+ Ajouter un bijou</button>
+      </div>
+      <div id="bijoux-col-list"></div>
+    </div>
+
+    <div style="display:flex;gap:1rem;justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeCollectionModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCollection()">Créer la collection</button>
     </div>
   </div>
 </div>
@@ -789,6 +842,7 @@
     if (page === 'dashboard') loadDashboard();
     if (page === 'bijoux') loadBijoux();
     if (page === 'commandes') loadCommandes();
+    if (page === 'collections') loadCollections();
   }
 
   // ===== DASHBOARD =====
@@ -1099,7 +1153,154 @@
     t.className = `toast ${type} show`;
     setTimeout(() => t.classList.remove('show'), 3000);
   }
+// ===== COLLECTIONS =====
+let bijouColIndex = 0;
 
+async function loadCollections() {
+  try {
+    const collections = await fetch(`${API_URL}/api/collections`).then(r => r.json());
+
+    if (collections.length === 0) {
+      document.getElementById('collections-list').innerHTML = '<div class="empty-state"><div class="empty-icon">💎</div><p>Aucune collection créée</p></div>';
+      return;
+    }
+
+    document.getElementById('collections-list').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Nom</th><th>Bijoux</th><th>Réduction</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${collections.map(c => `
+            <tr>
+              <td><strong>${c.nom}</strong><br><small style="color:var(--gris)">${c.description || ''}</small></td>
+              <td><span class="badge badge-rose">${c.bijoux.length} pièces</span></td>
+              <td><span class="badge badge-success">-${c.reduction}%</span></td>
+              <td style="display:flex;gap:0.5rem;">
+                <a href="/collection.html?id=${c._id}" target="_blank" class="btn btn-outline btn-sm">👁️ Voir</a>
+                <button class="btn btn-danger btn-sm" onclick="deleteCollection('${c._id}','${c.nom}')">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch(err) {
+    showToast('Erreur chargement collections', 'error');
+  }
+}
+
+function openCollectionModal() {
+  bijouColIndex = 0;
+  document.getElementById('col-nom').value = '';
+  document.getElementById('col-desc').value = '';
+  document.getElementById('col-reduction').value = '5';
+  document.getElementById('bijoux-col-list').innerHTML = '';
+  document.getElementById('modal-collection').classList.add('open');
+  ajouterBijouCol();
+}
+
+function closeCollectionModal() {
+  document.getElementById('modal-collection').classList.remove('open');
+}
+
+function ajouterBijouCol() {
+  const i = bijouColIndex++;
+  const div = document.createElement('div');
+  div.id = `bijou-col-${i}`;
+  div.style.cssText = 'background:var(--blanc);border:1px solid var(--rose-pale);border-radius:0.8rem;padding:1rem;margin-bottom:0.8rem;';
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:0.8rem;">
+      <strong style="font-size:0.85rem;">Bijou ${i + 1}</strong>
+      <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:1rem;">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+      <div>
+        <label style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:0.3rem;">Nom *</label>
+        <input type="text" name="bijou-nom-${i}" placeholder="Ex: Collier Gold" style="width:100%;padding:0.6rem 0.8rem;border:1px solid var(--rose-pale);border-radius:0.5rem;font-family:'Jost',sans-serif;font-size:0.85rem;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:0.3rem;">Prix (FCFA) *</label>
+        <input type="number" name="bijou-prix-${i}" placeholder="5000" style="width:100%;padding:0.6rem 0.8rem;border:1px solid var(--rose-pale);border-radius:0.5rem;font-family:'Jost',sans-serif;font-size:0.85rem;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:0.3rem;">Type</label>
+        <input type="text" name="bijou-type-${i}" placeholder="Ex: Collier, Bracelet..." style="width:100%;padding:0.6rem 0.8rem;border:1px solid var(--rose-pale);border-radius:0.5rem;font-family:'Jost',sans-serif;font-size:0.85rem;outline:none;">
+      </div>
+      <div>
+        <label style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gris);display:block;margin-bottom:0.3rem;">Photo</label>
+        <input type="file" name="bijou-image-${i}" accept="image/*" style="width:100%;font-size:0.8rem;">
+      </div>
+    </div>
+  `;
+  document.getElementById('bijoux-col-list').appendChild(div);
+}
+
+async function saveCollection() {
+  const nom = document.getElementById('col-nom').value;
+  const desc = document.getElementById('col-desc').value;
+  const reduction = document.getElementById('col-reduction').value;
+  const imagePrincipale = document.getElementById('col-image').files[0];
+
+  if (!nom) { showToast('Le nom est obligatoire', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('nom', nom);
+  formData.append('description', desc);
+  formData.append('reduction', reduction);
+  if (imagePrincipale) formData.append('image_principale', imagePrincipale);
+
+  const bijoux = [];
+  const bijouxDivs = document.querySelectorAll('[id^="bijou-col-"]');
+
+  bijouxDivs.forEach((div, idx) => {
+    const nomInput = div.querySelector('[name^="bijou-nom"]');
+    const prixInput = div.querySelector('[name^="bijou-prix"]');
+    const typeInput = div.querySelector('[name^="bijou-type"]');
+    const imageInput = div.querySelector('[name^="bijou-image"]');
+
+    if (nomInput?.value && prixInput?.value) {
+      bijoux.push({ nom: nomInput.value, prix: parseInt(prixInput.value), type: typeInput?.value || '' });
+      if (imageInput?.files[0]) {
+        formData.append('bijoux_images', imageInput.files[0]);
+      }
+    }
+  });
+
+  formData.append('bijoux', JSON.stringify(bijoux));
+
+  try {
+    const res = await fetch(`${API_URL}/api/collections`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData
+    });
+
+    if (res.ok) {
+      showToast('Collection créée !', 'success');
+      closeCollectionModal();
+      loadCollections();
+    } else {
+      showToast('Erreur lors de la création', 'error');
+    }
+  } catch(err) {
+    showToast('Erreur serveur', 'error');
+  }
+}
+
+async function deleteCollection(id, nom) {
+  if (!confirm(`Supprimer la collection "${nom}" ?`)) return;
+  try {
+    await fetch(`${API_URL}/api/collections/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    showToast('Collection supprimée', 'success');
+    loadCollections();
+  } catch(err) {
+    showToast('Erreur', 'error');
+  }
+}
   function saveSettings() {
     const url = document.getElementById('api-url-input').value;
     localStorage.setItem('api_url', url);
