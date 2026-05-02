@@ -515,6 +515,9 @@
       const bijoux = await res.json();
 
       if (!bijoux || bijoux.length === 0) {
+        grid.innerHTML = '<div class="collection-loading">Aucun bijou disponible.</div>';
+        return;
+      }
       // Stocker les bijoux globalement pour la lightbox
 window.bijouxData = bijoux;
 
