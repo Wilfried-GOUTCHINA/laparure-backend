@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Parure — Collection</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
+<style>
+  :root {
+    --rose: #e8a4b8; --rose-pale: #f7dce5; --rose-fonce: #c4788f;
+    --or: #c9a96e; --blanc: #fdfaf8; --blanc-casse: #f5ede8;
+    --gris: #8a7a7a; --noir: #2a1f1f;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Jost',sans-serif; background:var(--blanc); color:var(--noir); }
+
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:center; padding:1.2rem 4rem; background:rgba(253,250,248,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--rose-pale); }
+  .logo { font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300; color:var(--noir); text-decoration:none; }
+  .logo span { color:var(--rose-fonce); font-style:italic; }
+  .btn-retour { background:transparent; color:var(--rose-fonce); border:1px solid var(--rose); padding:0.6rem 1.5rem; border-radius:2rem; font-family:'Jost',sans-serif; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; text-decoration:none; transition:all 0.3s; }
+  .btn-retour:hover { background:var(--rose-fonce); color:white; }
+
+  .hero { padding: 8rem 8rem 4rem; background:linear-gradient(135deg,var(--rose-pale),var(--blanc-casse)); text-align:center; }
+  .hero-tag { font-size:0.7rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--rose-fonce); margin-bottom:1rem; }
+  .hero-title { font-family:'Cormorant Garamond',serif; font-size:clamp(2.5rem,5vw,4rem); font-weight:300; margin-bottom:1rem; }
+  .hero-title em { font-style:italic; color:var(--rose-fonce); }
+  .hero-desc { font-size:1rem; color:var(--gris); font-weight:200; max-width:500px; margin:0 auto 1.5rem; line-height:1.8; }
+  .hero-reduction { display:inline-block; background:var(--rose-fonce); color:white; padding:0.5rem 1.5rem; border-radius:2rem; font-size:0.8rem; letter-spacing:0.1em; }
+
+  .collection-content { padding:4rem 8rem; }
+
+  .bijoux-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:3rem; }
+
+  .bijou-item { background:white; border-radius:1rem; overflow:hidden; box-shadow:0 4px 20px rgba(196,120,143,0.08); transition:all 0.3s; cursor:pointer; border:2px solid transparent; }
+  .bijou-item:hover { transform:translateY(-4px); box-shadow:0 15px 40px rgba(196,120,143,0.2); }
+  .bijou-item.selected { border-color:var(--rose-fonce); }
+
+  .bijou-item img { width:100%; aspect-ratio:1; object-fit:cover; }
+  .bijou-placeholder { width:100%; aspect-ratio:1; background:linear-gradient(135deg,var(--rose-pale),var(--blanc-casse)); display:flex; align-items:center; justify-content:center; font-size:3rem; }
+
+  .bijou-item-info { padding:1rem 1.2rem; }
+  .bijou-item-type { font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--rose-fonce); margin-bottom:0.3rem; }
+  .bijou-item-nom { font-family:'Cormorant Garamond',serif; font-size:1.1rem; margin-bottom:0.3rem; }
+  .bijou-item-prix { font-size:0.85rem; color:var(--gris); }
+
+  .bijou-item-check { display:flex; align-items:center; gap:0.5rem; margin-top:0.8rem; }
+  .bijou-item-check input { accent-color:var(--rose-fonce); width:16px; height:16px; cursor:pointer; }
+  .bijou-item-check label { font-size:0.8rem; color:var(--gris); cursor:pointer; }
+
+  /* PANIER */
+  .panier { background:white; border-radius:1.5rem; padding:2rem; box-shadow:0 10px 40px rgba(196,120,143,0.12); position:sticky; top:100px; }
+  .panier-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; margin-bottom:1.5rem; }
+
+  .panier-items { margin-bottom:1.5rem; min-height:60px; }
+  .panier-item { display:flex; justify-content:space-between; padding:0.6rem 0; border-bottom:1px solid var(--rose-pale); font-size:0.85rem; }
+  .panier-empty { color:var(--gris); font-style:italic; font-size:0.85rem; text-align:center; padding:1rem 0; }
+
+  .panier-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
+  .panier-total-label { font-size:0.85rem; color:var(--gris); }
+  .panier-total-value { font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:600; color:var(--rose-fonce); }
+
+  .panier-reduction { background:var(--rose-pale); border-radius:0.5rem; padding:0.5rem 1rem; margin-bottom:1rem; font-size:0.8rem; color:var(--rose-fonce); display:none; }
+
+  .btn-commander { width:100%; padding:1rem; background:var(--noir); color:white; border:none; border-radius:2rem; font-family:'Jost',sans-serif; font-size:0.8rem; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; transition:all 0.3s; margin-bottom:0.8rem; }
+  .btn-commander:hover { background:var(--rose-fonce); }
+  .btn-commander:disabled { opacity:0.5; cursor:not-allowed; }
+
+  .btn-tout { width:100%; padding:1rem; background:var(--rose-fonce); color:white; border:none; border-radius:2rem; font-family:'Jost',sans-serif; font-size:0.8rem; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; transition:all 0.3s; }
+  .btn-tout:hover { background:var(--or); }
+
+  /* MODAL PAIEMENT */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:200; backdrop-filter:blur(4px); }
+  .modal-overlay.open { display:flex; }
+  .modal { background:white; border-radius:1.5rem; padding:2rem; width:440px; max-width:95vw; box-shadow:0 30px 80px rgba(0,0,0,0.2); }
+  .modal-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; margin-bottom:1.5rem; }
+  .form-field { margin-bottom:1rem; }
+  .form-field label { display:block; font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gris); margin-bottom:0.4rem; }
+  .form-field input { width:100%; padding:0.8rem 1rem; border:1px solid var(--rose-pale); border-radius:0.7rem; font-family:'Jost',sans-serif; font-size:0.9rem; outline:none; }
+  .form-field input:focus { border-color:var(--rose-fonce); }
+  .modal-total { background:var(--rose-pale); border-radius:0.7rem; padding:1rem; display:flex; justify-content:space-between; margin-bottom:1.5rem; }
+  .modal-buttons { display:flex; gap:1rem; }
+  .btn-annuler { flex:1; padding:0.9rem; background:transparent; border:1px solid var(--rose); color:var(--rose-fonce); border-radius:2rem; font-family:'Jost',sans-serif; font-size:0.8rem; cursor:pointer; }
+  .btn-payer { flex:2; padding:0.9rem; background:#FFCB00; border:none; border-radius:2rem; font-family:'Jost',sans-serif; font-size:0.8rem; cursor:pointer; font-weight:500; }
+
+  .layout { display:grid; grid-template-columns:2fr 1fr; gap:2rem; align-items:start; }
+
+  footer { background:var(--noir); color:rgba(255,255,255,0.6); text-align:center; padding:2rem; font-size:0.8rem; margin-top:4rem; }
+  footer span { color:var(--rose); }
+
+  @media(max-width:768px) {
+    nav { padding:1rem 1.5rem; }
+    .hero { padding:6rem 1.5rem 3rem; }
+    .collection-content { padding:2rem 1.5rem; }
+    .bijoux-grid { grid-template-columns:1fr 1fr; }
+    .layout { grid-template-columns:1fr; }
+    .panier { position:static; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">La <span>Parure</span></a>
+  <a href="/" class="btn-retour">← Retour</a>
+</nav>
+
+<div class="hero" id="hero">
+  <div class="hero-tag">Collection Exclusive</div>
+  <h1 class="hero-title" id="collection-nom">Chargement...</h1>
+  <p class="hero-desc" id="collection-desc"></p>
+  <span class="hero-reduction" id="collection-reduction"></span>
+</div>
+
+<div class="collection-content">
+  <div class="layout">
+    <div>
+      <div class="bijoux-grid" id="bijoux-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--gris);font-style:italic;">Chargement...</div>
+      </div>
+    </div>
+    <div>
+      <div class="panier">
+        <div class="panier-title">💍 Mon Panier</div>
+        <div class="panier-items" id="panier-items">
+          <div class="panier-empty">Sélectionnez des bijoux</div>
+        </div>
+        <div class="panier-reduction" id="panier-reduction"></div>
+        <div class="panier-total">
+          <span class="panier-total-label">Total</span>
+          <span class="panier-total-value" id="panier-total">0 FCFA</span>
+        </div>
+        <button class="btn-commander" id="btn-commander" onclick="ouvrirModal(false)" disabled>
+          Commander la sélection
+        </button>
+        <button class="btn-tout" id="btn-tout" onclick="ouvrirModal(true)">
+          🎁 Prendre toute la collection (-5%)
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PAIEMENT -->
+<div class="modal-overlay" id="modal-paiement">
+  <div class="modal">
+    <div class="modal-title">💳 Finaliser la commande</div>
+    <div class="form-field">
+      <label>Votre nom complet *</label>
+      <input type="text" id="pay-nom" placeholder="Ex: Aminata Kone">
+    </div>
+    <div class="form-field">
+      <label>Numéro MTN MoMo *</label>
+      <input type="tel" id="pay-telephone" placeholder="Ex: 0196XXXXXX">
+    </div>
+    <div class="form-field">
+      <label>Email (optionnel)</label>
+      <input type="email" id="pay-email" placeholder="aminata@gmail.com">
+    </div>
+    <div class="modal-total">
+      <span style="font-size:0.85rem;color:var(--gris);">Montant total :</span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--rose-fonce);" id="modal-montant">0 FCFA</span>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-annuler" onclick="fermerModal()">Annuler</button>
+      <button class="btn-payer" onclick="payer()">💳 Payer via FedaPay</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 <span>La Parure</span> — Bijoux d'Exception</p>
+</footer>
+
+<script>
+  const API = 'https://laparure-backend.onrender.com';
+  const params = new URLSearchParams(window.location.search);
+  const collectionId = params.get('id');
+
+  let collection = null;
+  let selectionTout = false;
+
+  async function chargerCollection() {
+    if (!collectionId) {
+      document.getElementById('collection-nom').textContent = 'Collection introuvable';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/api/collections/${collectionId}`);
+      collection = await res.json();
+
+      document.title = `La Parure — ${collection.nom}`;
+      document.getElementById('collection-nom').innerHTML = collection.nom;
+      document.getElementById('collection-desc').textContent = collection.description || '';
+
+      const reduction = collection.reduction || 5;
+      document.getElementById('collection-reduction').textContent = `🎁 ${reduction}% de réduction sur la collection complète !`;
+      document.getElementById('collection-reduction').style.display = 'inline-block';
+      document.getElementById('btn-tout').textContent = `🎁 Prendre toute la collection (-${reduction}%)`;
+
+      afficherBijoux();
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  function afficherBijoux() {
+    const grid = document.getElementById('bijoux-grid');
+    grid.innerHTML = collection.bijoux.map((b, i) => `
+      <div class="bijou-item" id="card-${i}" onclick="toggleSelection(${i})">
+        ${b.image
+          ? `<img src="${b.image}" alt="${b.nom}">`
+          : `<div class="bijou-placeholder">💍</div>`
+        }
+        <div class="bijou-item-info">
+          <div class="bijou-item-type">${b.type || ''}</div>
+          <div class="bijou-item-nom">${b.nom}</div>
+          <div class="bijou-item-prix">${b.prix.toLocaleString()} FCFA</div>
+          <div class="bijou-item-check">
+            <input type="checkbox" id="check-${i}" onchange="updatePanier()">
+            <label for="check-${i}">Ajouter au panier</label>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function toggleSelection(i) {
+    const check = document.getElementById(`check-${i}`);
+    check.checked = !check.checked;
+    updatePanier();
+  }
+
+  function updatePanier() {
+    const panierItems = document.getElementById('panier-items');
+    const panierTotal = document.getElementById('panier-total');
+    const btnCommander = document.getElementById('btn-commander');
+    const panierReduction = document.getElementById('panier-reduction');
+
+    let selected = [];
+    let total = 0;
+
+    collection.bijoux.forEach((b, i) => {
+      const check = document.getElementById(`check-${i}`);
+      const card = document.getElementById(`card-${i}`);
+      if (check.checked) {
+        selected.push(b);
+        total += b.prix;
+        card.classList.add('selected');
+      } else {
+        card.classList.remove('selected');
+      }
+    });
+
+    if (selected.length === 0) {
+      panierItems.innerHTML = '<div class="panier-empty">Sélectionnez des bijoux</div>';
+      panierReduction.style.display = 'none';
+    } else {
+      panierItems.innerHTML = selected.map(b => `
+        <div class="panier-item">
+          <span>${b.nom}</span>
+          <strong>${b.prix.toLocaleString()} FCFA</strong>
+        </div>
+      `).join('');
+      panierReduction.style.display = 'none';
+    }
+
+    panierTotal.textContent = total.toLocaleString() + ' FCFA';
+    btnCommander.disabled = selected.length === 0;
+  }
+
+  function ouvrirModal(tout) {
+    selectionTout = tout;
+    let total = 0;
+    let items = [];
+
+    if (tout) {
+      collection.bijoux.forEach(b => { total += b.prix; items.push(b); });
+      const reduction = collection.reduction || 5;
+      total = Math.round(total * (1 - reduction / 100));
+      document.getElementById('panier-reduction').textContent = `✅ Réduction ${reduction}% appliquée !`;
+      document.getElementById('panier-reduction').style.display = 'block';
+
+      // Cocher tous les bijoux
+      collection.bijoux.forEach((b, i) => {
+        document.getElementById(`check-${i}`).checked = true;
+        document.getElementById(`card-${i}`).classList.add('selected');
+      });
+      updatePanier();
+      document.getElementById('panier-total').textContent = total.toLocaleString() + ' FCFA';
+    } else {
+      collection.bijoux.forEach((b, i) => {
+        if (document.getElementById(`check-${i}`).checked) {
+          total += b.prix;
+          items.push(b);
+        }
+      });
+    }
+
+    document.getElementById('modal-montant').textContent = total.toLocaleString() + ' FCFA';
+    document.getElementById('modal-paiement').classList.add('open');
+  }
+
+  function fermerModal() {
+    document.getElementById('modal-paiement').classList.remove('open');
+  }
+
+  async function payer() {
+    const nom = document.getElementById('pay-nom').value;
+    const telephone = document.getElementById('pay-telephone').value;
+    const email = document.getElementById('pay-email').value;
+    const montant = parseInt(document.getElementById('modal-montant').textContent.replace(/\s/g, '').replace('FCFA', ''));
+
+    if (!nom || !telephone) {
+      alert('Veuillez remplir les champs obligatoires !');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/api/paiement/initier`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ montant, nom, email, telephone, bijoux: [] })
+      });
+      const data = await res.json();
+
+      if (data.token) {
+        FedaPay.init({
+          public_key: 'pk_sandbox_SycONvo7_j2vNTZer_-SPLcp',
+          transaction: { token: data.token },
+          onComplete: function(resp) {
+            if (resp.reason !== FedaPay.DIALOG_DISMISSED) {
+              alert('✅ Paiement réussi ! Merci pour votre commande.');
+              fermerModal();
+            }
+          }
+        }).open();
+      }
+    } catch(err) {
+      alert('Erreur lors du paiement.');
+    }
+  }
+
+  chargerCollection();
+</script>
+</body>
+</html>

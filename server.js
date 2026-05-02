@@ -22,7 +22,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/bijoux', require('./routes/bijoux'));
 app.use('/api/commandes', require('./routes/commandes'));
 app.use('/api/paiement', require('./routes/paiement'));
-
+app.use('/api/collections', require('./routes/collections'));
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
