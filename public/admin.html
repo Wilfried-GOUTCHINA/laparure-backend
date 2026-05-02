@@ -1178,6 +1178,7 @@ async function loadCollections() {
               <td><span class="badge badge-success">-${c.reduction}%</span></td>
               <td style="display:flex;gap:0.5rem;">
                 <a href="/collection.html?id=${c._id}" target="_blank" class="btn btn-outline btn-sm">👁️ Voir</a>
+<button class="btn btn-sm" style="background:var(--or);color:white;" onclick="editCollection('${c._id}')">✏️ Modifier</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteCollection('${c._id}','${c.nom}')">🗑️</button>
               </td>
             </tr>
@@ -1282,6 +1283,91 @@ async function saveCollection() {
       loadCollections();
     } else {
       showToast('Erreur lors de la création', 'error');
+    }
+  } catch(err) {
+    showToast('Erreur serveur', 'error');
+  }
+}
+async function editCollection(id) {
+  try {
+    const c = await fetch(`${API_URL}/api/collections/${id}`).then(r => r.json());
+
+    document.getElementById('col-nom').value = c.nom;
+    document.getElementById('col-desc').value = c.description || '';
+    document.getElementById('col-reduction').value = c.reduction || 5;
+
+    // Afficher les bijoux existants
+    bijouColIndex = 0;
+    document.getElementById('bijoux-col-list').innerHTML = '';
+
+    c.bijoux.forEach((b, i) => {
+      ajouterBijouCol();
+      const div = document.getElementById(`bijou-col-${i}`);
+      div.querySelector('[name^="bijou-nom"]').value = b.nom;
+      div.querySelector('[name^="bijou-prix"]').value = b.prix;
+      div.querySelector('[name^="bijou-type"]').value = b.type || '';
+    });
+
+    // Changer le bouton sauvegarder
+    const btn = document.querySelector('#modal-collection .btn-primary');
+    btn.textContent = 'Mettre à jour';
+    btn.onclick = () => updateCollection(id);
+
+    document.querySelector('#modal-collection .modal-title').textContent = 'Modifier la Collection';
+    document.getElementById('modal-collection').classList.add('open');
+
+  } catch(err) {
+    showToast('Erreur chargement collection', 'error');
+  }
+}
+
+async function updateCollection(id) {
+  const nom = document.getElementById('col-nom').value;
+  const desc = document.getElementById('col-desc').value;
+  const reduction = document.getElementById('col-reduction').value;
+  const imagePrincipale = document.getElementById('col-image').files[0];
+
+  if (!nom) { showToast('Le nom est obligatoire', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('nom', nom);
+  formData.append('description', desc);
+  formData.append('reduction', reduction);
+  if (imagePrincipale) formData.append('image_principale', imagePrincipale);
+
+  const bijoux = [];
+  document.querySelectorAll('[id^="bijou-col-"]').forEach(div => {
+    const nomInput = div.querySelector('[name^="bijou-nom"]');
+    const prixInput = div.querySelector('[name^="bijou-prix"]');
+    const typeInput = div.querySelector('[name^="bijou-type"]');
+    const imageInput = div.querySelector('[name^="bijou-image"]');
+
+    if (nomInput?.value && prixInput?.value) {
+      bijoux.push({ nom: nomInput.value, prix: parseInt(prixInput.value), type: typeInput?.value || '' });
+      if (imageInput?.files[0]) formData.append('bijoux_images', imageInput.files[0]);
+    }
+  });
+
+  formData.append('bijoux', JSON.stringify(bijoux));
+
+  try {
+    const res = await fetch(`${API_URL}/api/collections/${id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData
+    });
+
+    if (res.ok) {
+      showToast('Collection mise à jour !', 'success');
+      closeCollectionModal();
+      loadCollections();
+
+      // Remettre le bouton original
+      const btn = document.querySelector('#modal-collection .btn-primary');
+      btn.textContent = 'Créer la collection';
+      btn.onclick = saveCollection;
+    } else {
+      showToast('Erreur mise à jour', 'error');
     }
   } catch(err) {
     showToast('Erreur serveur', 'error');

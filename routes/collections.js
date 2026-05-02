@@ -87,5 +87,37 @@ router.delete('/:id', auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+router.put('/:id', auth, upload.fields([
+  { name: 'image_principale', maxCount: 1 },
+  { name: 'bijoux_images', maxCount: 10 }
+]), async (req, res) => {
+  try {
+    const update = {
+      nom: req.body.nom,
+      description: req.body.description,
+      reduction: req.body.reduction
+    };
 
+    if (req.files?.image_principale) {
+      update.image_principale = await uploadToCloudinary(req.files.image_principale[0].buffer);
+    }
+
+    if (req.body.bijoux) {
+      const bijoux = JSON.parse(req.body.bijoux);
+      if (req.files?.bijoux_images) {
+        for (let i = 0; i < req.files.bijoux_images.length; i++) {
+          if (bijoux[i]) {
+            bijoux[i].image = await uploadToCloudinary(req.files.bijoux_images[i].buffer);
+          }
+        }
+      }
+      update.bijoux = bijoux;
+    }
+
+    const collection = await Collection.findByIdAndUpdate(req.params.id, update, { new: true });
+    res.json(collection);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 module.exports = router;
