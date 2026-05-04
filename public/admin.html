@@ -1245,6 +1245,12 @@ async function saveCollection() {
 
   if (!nom) { showToast('Le nom est obligatoire', 'error'); return; }
 
+  // Bouton loading
+  const btn = document.querySelector('#modal-collection .btn-primary');
+  const originalText = btn.textContent;
+  btn.textContent = 'Enregistrement en cours...';
+  btn.disabled = true;
+
   const formData = new FormData();
   formData.append('nom', nom);
   formData.append('description', desc);
@@ -1252,9 +1258,7 @@ async function saveCollection() {
   if (imagePrincipale) formData.append('image_principale', imagePrincipale);
 
   const bijoux = [];
-  const bijouxDivs = document.querySelectorAll('[id^="bijou-col-"]');
-
-  bijouxDivs.forEach((div, idx) => {
+  document.querySelectorAll('[id^="bijou-col-"]').forEach((div) => {
     const nomInput = div.querySelector('[name^="bijou-nom"]');
     const prixInput = div.querySelector('[name^="bijou-prix"]');
     const typeInput = div.querySelector('[name^="bijou-type"]');
@@ -1262,15 +1266,25 @@ async function saveCollection() {
 
     if (nomInput?.value && prixInput?.value) {
       bijoux.push({ nom: nomInput.value, prix: parseInt(prixInput.value), type: typeInput?.value || '' });
-      if (imageInput?.files[0]) {
-        formData.append('bijoux_images', imageInput.files[0]);
-      }
+      if (imageInput?.files[0]) formData.append('bijoux_images', imageInput.files[0]);
     }
   });
 
   formData.append('bijoux', JSON.stringify(bijoux));
 
   try {
+    // Renouveler le token avant l'upload
+    const loginRes = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'admin@laparure.com', password: 'LaParure2026!' })
+    });
+    const loginData = await loginRes.json();
+    if (loginData.token) {
+      token = loginData.token;
+      localStorage.setItem('laparure_token', token);
+    }
+
     const res = await fetch(`${API_URL}/api/collections`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
@@ -1278,14 +1292,18 @@ async function saveCollection() {
     });
 
     if (res.ok) {
-      showToast('Collection créée !', 'success');
+      showToast('Collection creee !', 'success');
       closeCollectionModal();
       loadCollections();
     } else {
-      showToast('Erreur lors de la création', 'error');
+      const err = await res.json();
+      showToast('Erreur: ' + (err.message || 'inconnue'), 'error');
     }
   } catch(err) {
-    showToast('Erreur serveur', 'error');
+    showToast('Erreur serveur: ' + err.message, 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
   }
 }
 async function editCollection(id) {
@@ -1329,6 +1347,11 @@ async function updateCollection(id) {
 
   if (!nom) { showToast('Le nom est obligatoire', 'error'); return; }
 
+  const btn = document.querySelector('#modal-collection .btn-primary');
+  const originalText = btn.textContent;
+  btn.textContent = 'Mise a jour en cours...';
+  btn.disabled = true;
+
   const formData = new FormData();
   formData.append('nom', nom);
   formData.append('description', desc);
@@ -1336,7 +1359,7 @@ async function updateCollection(id) {
   if (imagePrincipale) formData.append('image_principale', imagePrincipale);
 
   const bijoux = [];
-  document.querySelectorAll('[id^="bijou-col-"]').forEach(div => {
+  document.querySelectorAll('[id^="bijou-col-"]').forEach((div) => {
     const nomInput = div.querySelector('[name^="bijou-nom"]');
     const prixInput = div.querySelector('[name^="bijou-prix"]');
     const typeInput = div.querySelector('[name^="bijou-type"]');
@@ -1351,6 +1374,18 @@ async function updateCollection(id) {
   formData.append('bijoux', JSON.stringify(bijoux));
 
   try {
+    // Renouveler le token avant l'upload
+    const loginRes = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'admin@laparure.com', password: 'LaParure2026!' })
+    });
+    const loginData = await loginRes.json();
+    if (loginData.token) {
+      token = loginData.token;
+      localStorage.setItem('laparure_token', token);
+    }
+
     const res = await fetch(`${API_URL}/api/collections/${id}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${token}` },
@@ -1358,22 +1393,23 @@ async function updateCollection(id) {
     });
 
     if (res.ok) {
-      showToast('Collection mise à jour !', 'success');
+      showToast('Collection mise a jour !', 'success');
       closeCollectionModal();
       loadCollections();
-
-      // Remettre le bouton original
-      const btn = document.querySelector('#modal-collection .btn-primary');
-      btn.textContent = 'Créer la collection';
-      btn.onclick = saveCollection;
+      const btn2 = document.querySelector('#modal-collection .btn-primary');
+      btn2.textContent = 'Creer la collection';
+      btn2.onclick = saveCollection;
     } else {
-      showToast('Erreur mise à jour', 'error');
+      const err = await res.json();
+      showToast('Erreur: ' + (err.message || 'inconnue'), 'error');
     }
   } catch(err) {
-    showToast('Erreur serveur', 'error');
+    showToast('Erreur serveur: ' + err.message, 'error');
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
   }
 }
-
 async function deleteCollection(id, nom) {
   if (!confirm(`Supprimer la collection "${nom}" ?`)) return;
   try {
